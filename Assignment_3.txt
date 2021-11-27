@@ -1,0 +1,48 @@
+
+; 3.10 Programming Exercises
+
+COMMENT !
+	In this assignment 3, we will be using the format from AddTwo.asm from page 80 found
+	in the Project32_VS2019. However, we will modify to calculate the expression using the 
+	registers: (A-B)+(C-D). We will first assign integers to registers by using the mov then
+	following the expressions, we will add, sub, and put the final answer in EAX. Finally, we
+	will display all the registers using call DumpRegs. In order to call DumpRegs we need to
+	Include Irvine32.inc
+!
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess proto,dwExitCode:dword
+
+INCLUDE Irvine32.inc	; Include this so we can use bunch of commands such as call DumpRegs
+
+.code
+main proc
+	; Assign integers to registers
+	mov	eax,40	; EAX=A=40 Move 40 to EAX.
+	mov	ebx,30	; EBX=B=30 Move 30 to EBX.
+	mov	ecx,20	; ECX=C=20 Move 20 to ECX.
+	mov	edx,10	; EDX=D=10 Move 10 to EDX.
+
+	; Calculate the expression and put it in EAX or A=(A-B)+(C-D).
+	sub	eax,ebx	; (A-B) or EAX-EBX 40-30 = 10.
+	sub	ecx,edx	; (C-D) or EDX-ECX 20-10 = 10.
+	add	eax,ecx	; A=(A-B)+(C-D) or EAX = 10 + 10 = 20.
+	
+	; The result will be EAX = 00000014 in hexadecimal which is 20 in decimal value.
+
+	call DumpRegs ; Displays EAX, EBX, ECX, EDX, ESI, EDI, EBP, ESP, EFLAGS, and EIP registers in hexadecimals.
+	; Also displays the most common CPU status flags.
+
+	invoke ExitProcess,0 ; end the program
+main endp
+end main
+
+
+; ------------------- Paste of run from console window --------
+;  EAX=00000014  EBX=0000001E  ECX=0000000A  EDX=0000000A
+;  ESI=004010AA  EDI=004010AA  EBP=0019FF80  ESP=0019FF74
+;  EIP=0040367B  EFL=00000216  CF=0  SF=0  ZF=0  OF=0  AF=1  PF=1
+;
+; -------------------------------------------------------------- 

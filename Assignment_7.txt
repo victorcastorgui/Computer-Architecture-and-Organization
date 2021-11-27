@@ -1,0 +1,142 @@
+
+; 
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess proto, dwExitCode:dword
+
+COMMENT !
+     In this assignment, the program will find the greatest common divisor. Greatest common divisor
+     of two integers is the largest integer that will evenly divide both integers. The integer division
+     will be in a loop. Before the program of gcd starts, the user will be asked to enter set of values.
+     The values can be in any order. The largest value will be passed as x into the GCD function. This program
+     will run 3 times.
+!
+
+INCLUDE Irvine32.inc
+.data
+str1 BYTE "Please enter a set of values",0 ; String to prompt the user.
+str2 BYTE "Enter the first value: ",0 ; To prompt for first value.
+str3 BYTE "Enter the second value: ",0 ; To prompt for second value.
+str4 BYTE "The GCD is: ",0 ; String to tell what is the GCD.
+Vala SDWORD ? ; Array to store the singed integer.
+Valb SDWORD ? ; Array to store the signed integer.
+absVala DWORD ? ; Array to store the absolute value.
+absValb DWORD ? ; Array to store the absolute value.
+
+.code
+main PROC
+     mov ecx,3 ; Loop the program three times.
+L1:
+     mov edx,OFFSET str1 ; move str1 to edx.
+     call WriteString    ; print out the string.
+     call Crlf ; Print out enter.
+
+     mov edx,OFFSET str2 ; move str2 to edx.
+     call WriteString    ; print out the string.
+     call ReadInt   ; Read the integer that the user will input.
+     mov Vala,eax   ; Move the value from eax to Vala SDWORD.
+     mov edx,OFFSET str3 ; move str3 to edx.
+     call WriteString    ; print out the string.
+     call ReadInt   ; Read the integer that the user will input.
+     mov Valb,eax   ; move the value to Valb SDWORD.
+     call AbsoluteValue ; Call AbsoluteValue returning the absolute value to absVala and absValb.
+     call MoveValues; call Movevalues to change the positions.
+     call GCD ;  call gcd proceudre.
+     mov edx,OFFSET str4 ; move str4 to edx.
+     call WriteString ; Print string.
+     mov eax, absVala ; Move the final result of GCD to eax.
+     call WriteInt ; print the value from GCD from eax.
+     call Crlf ; Print enter.
+     loop L1
+exit
+main ENDP
+
+;-------------------------------------------------------------------------
+AbsoluteValue PROC
+;-------------------------------------------------------------------------
+; This procedure will convert all signed integers into absolute value. For
+; example -1 will become +1.
+;-------------------------------------------------------------------------
+     mov eax,Vala ; move the value to eax.
+     mov esi,eax  ; copy eax to esi.
+     sar eax,31   ; shifting 31 bits to the right on ebx.
+     xor esi,eax  ; to obtain the 1's complement of the number and store in esi.
+     sub esi,eax ; subtract eax with esi.
+     mov absVala,esi ; store the value to absVala DWORD.
+
+     mov ebx,Valb ; move the value to ebx.
+     mov edi,ebx ; move ebx to edi.
+     sar ebx,31 ; shifting 31 bits to the right on ebx.
+     xor edi,ebx ; to obtain the 1's complement of the numebr and store in edi.
+     sub edi,ebx ; subtract ebx with edi.
+     mov absValb,edi ; move edi to absValb DWORD.
+AbsoluteValue ENDP
+
+;----------------------------------------------------------------------------------
+MoveValues PROC
+;----------------------------------------------------------------------------------
+; This procedure will move the largest integer entered by the user into x. For example,
+; the user enter 2 for first value and 5 for second value. It will move the second value
+; into x and first value to y
+;----------------------------------------------------------------------------------
+     cmp esi,edi ; compare edi to esi.
+     JGE DONE  ; If esi is bigger than return;
+     ; If not
+     mov absVala,edi ; change the position of edi to absVala.
+     mov absValb,esi ; change the positionf of esi to absValb.
+DONE:
+     ret ; return to main.
+MoveValues ENDP
+
+;------------------------------------------------------------------------------------
+GCD PROC
+;------------------------------------------------------------------------------------
+; This procedure will calculate the GCD using the absoulute integer that the user enter.
+;------------------------------------------------------------------------------------
+     ; looping until found gcd.
+     doWhile:
+          mov eax,absVala ; eax = x
+          mov ebx,absValb ; ebx = y
+          mov edx,0 ; store 0 in edx
+          div ebx ; n = ebx = x%y
+
+          mov esi,absValb ; x=y
+          mov absValb,edx ; y=n
+          mov absVala,esi ; move esi to absVala.
+          cmp absValb,0 ; if y>0
+          jg doWhile ; repeat the loop.
+          ret ; return to main.
+GCD ENDP
+END main
+
+;-------------------------------TEST RUN 1--------------------------------------
+; Please enter a set of values
+; Enter the first value: 5
+; Enter the second value: 15
+; The GCD is: +5
+; Please enter a set of values
+; Enter the first value: -250
+; Enter the second value: 4
+; The GCD is: +2
+; Please enter a set of values
+; Enter the first value: -9
+; Enter the second value: -3
+; The GCD is: +3
+;----------------------------END OF RUN 1--------------------------------------
+
+;----------------------------TEST RUN 2----------------------------------------
+; Please enter a set of values
+; Enter the first value: 16
+; Enter the second value: 3
+; The GCD is: +1
+; Please enter a set of values
+; Enter the first value: 8
+; Enter the second value: -400
+; The GCD is: +8
+; Please enter a set of values
+; Enter the first value: 73
+; Enter the second value: 146
+; The GCD is: +73
+;---------------------------END OF RUN 2--------------------------------------

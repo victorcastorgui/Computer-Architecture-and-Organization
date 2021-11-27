@@ -1,0 +1,109 @@
+
+/*
+* In this assignment, the program will loop 5 times and ask the user to enter value to send to the asm procedure
+* the asm procedure will then check if the number entered is prime or not prime. If prime it will return 1
+* if not prime it will return 0 with messages.
+*/
+
+.586
+.MODEL flat,C
+checkPrime PROTO,
+     value:DWORD
+
+INCLUDE Irvine32.inc
+.data
+     Array DWORD 2,3,5,7,11,13,17,19,23,29,31
+
+.code
+checkPrime proc,
+value:DWORD
+
+; Change user input to absolute value
+mov eax,value 
+mov esi,eax
+sar eax,31
+xor esi,eax
+sub esi,eax
+mov eax,esi
+
+
+; Begin checking Prime or not Prime
+mov esi,offset Array
+mov ecx,lengthof Array
+
+
+
+L1:
+     mov edx,0
+     mov ebx,[esi]
+     mov edi,eax
+     div ebx
+     mov eax,edi
+     cmp ebx,edi
+     je prime
+     cmp edx,0
+     je noPrime
+     add esi,4
+     Loop L1
+
+prime:
+     mov eax,1
+     jmp L2
+
+noPrime:
+     mov eax,0
+     jmp L2
+
+L2:
+     ret ; exit
+
+checkPrime ENDP
+
+
+END
+
+
+// C++
+#include <iostream>
+extern "C" int checkPrime(int value); // To call the asm procedure
+
+using namespace std;
+
+int main() {
+     int value;
+
+     for (int i = 0; i < 5; i++) {
+
+          cout << "Enter an integer range (-1000 to 1000): "; // Prompt
+          cin >> value; // Enter value
+          if (value < -1000 || value > 1000) {
+               cout << "Invalid Value please try again!" << endl;
+               continue;
+          } // Invalid value
+          else {
+               int index = checkPrime(value);
+
+               if (index != 0) {
+                    cout << value << " prime number " << endl;
+               }
+               else {
+                    cout << value << " not prime number " << endl;
+               }
+          } // Return prime or not prime
+     }
+     return 0;
+}
+
+/*
+------------------RUN-----------------
+Enter an integer range (-1000 to 1000): 1001
+Invalid Value please try again!
+Enter an integer range (-1000 to 1000): 1000
+1000 not prime number
+Enter an integer range (-1000 to 1000): -3958
+Invalid Value please try again!
+Enter an integer range (-1000 to 1000): 7
+7 prime number
+Enter an integer range (-1000 to 1000): -227
+-227 prime number
+*/

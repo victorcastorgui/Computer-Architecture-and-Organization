@@ -1,0 +1,130 @@
+
+; INVOKE, recursive, USES, PROC, TYPE, SDWORD, push, BYTE
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:dword
+totalCount PROTO, secondParameter:SDWORD, resultGCD:SDWORD ; procedure calls
+
+COMMENT !
+     This assignmetn will have two parts. The first part is to use recursion to implement Euclid's algorithm
+     to find GCD. The second part is to accept two arrays of SDWORD and third parameter that indicates the
+     lenth of two arrays. The program will send to the y array and the z array from main. It will increment
+     a count if the element in y in the first array and the corresponding z in the second array is equal.
+     The count number will be located in EAX.
+!
+
+INCLUDE Irvine32.inc
+.data
+arrayX SDWORD 24,13,432,30,56,330,63 ; ArrayX that consist of 7 signed integers
+arrayY SDWORD 4,7,226,24,7,9,9 ; ArrayY that consist of 7 signed integers
+arrayZ SDWORD 7 DUP(0)
+msg4 BYTE "count: ",0 ; string to tell the count.
+msg BYTE "The GCD of ",0
+msg2 BYTE " and ",0
+msg3 BYTE " is "
+
+.code
+main PROC
+     mov ecx,LENGTHOF arrayX ; Loop the program 7 times because there are seven sets.
+     mov esi, OFFSET arrayX ; This is a pointer to arrayX
+     mov edi, OFFSET arrayY ; THis is a pointer to arrayY
+     mov ebp, OFFSET arrayZ ; This is a pointer to arrayZ
+L1:
+    mov edx,[esi] ; move the element of esi to eax
+    push edx   ; parameter for euclids gcd as "a"
+
+    mov edx,[edi] ; move the element of edi to eax
+    push edx ; parameter for euclids gcd as "b"
+
+    call EuclidsGCD ; find the GCD
+    mov [ebp],eax ; move the result to ebp
+
+    mov edx,OFFSET msg ; Move the msg to edx
+    call WriteString ; print out the string
+    mov eax,[esi] ; move the element of esi to eax
+    call WriteDec ; write the decimal
+    mov edx, OFFSET msg2 ; move msg2 to edx
+    call WriteString ; print out the string
+    mov eax,[edi] ; move the element of edi to eax
+    call WriteDec ; write the decimal
+    mov edx, OFFSET msg3 ; move msg3 to edx
+    call WriteString ; print out the strign
+    mov eax,[ebp]  ; move the element of ebp to eax
+    call WriteDec ; write the number
+    call Crlf ; print enter
+    call Crlf ; print enter
+
+    call nextNumber ; To move to the next element in the arrays
+
+    Loop L1 ; to loop L1
+
+    INVOKE totalCount, OFFSET arrayY, OFFSET arrayZ
+    mov edx, OFFSET msg4
+    call WriteString
+    call WriteInt
+
+exit
+main ENDP
+
+nextNumber PROC
+     add esi, TYPE SDWORD ; Move to next element
+     add edi, TYPE SDWORD ; Move to next element
+     add ebp, TYPE SDWORD ; Move to next element
+nextNumber ENDP
+
+EuclidsGCD PROC USES ebp
+     mov ebp,esp ; move esp to ebp
+     mov eax,[ebp+12] ; [ebp+12] is the dividen
+     mov ebx,[ebp+8] ; [ebp+8] is the divisor
+     cmp ebx,0 ; compare 0 to ebx
+     je DONE ; if equal then jump to DONE
+     mov edx,0 ; move 0 to edx
+     div ebx ; divide eax with ebx
+     mov eax,edx ; the remainder in edx will move to eax
+     push ebx ; save the ebx
+     push eax ; save the remainder in eax.
+     call EuclidsGCD ; call EuclidsGCD recursively
+DONE:
+     ret 8 ; free the used stack space
+EuclidsGCD ENDP
+
+totalCount PROC USES ebx ecx edx, secondParameter: SDWORD, resultGCD: SDWORD
+     mov esi,secondParameter
+     mov edi,resultGCD
+     mov ecx,LENGTHOF arrayX ; Loop 7 times since there are 7 sets
+     mov eax,0 ; This will be used to count.
+
+L2: 
+     mov ebx,[esi] ; move element of esi to ebx
+     mov edx,[edi] ; move elemtn of edi to edx
+     cmp ebx,edx ; compare edx and ebx
+     JNE next ; If not equal jump to next
+     inc eax ; add 1 to eax
+next: 
+     add esi, TYPE SDWORD ; Move to next element
+     add edi, TYPE SDWORD ; Move to next element
+     Loop L2 ; Loop l2 till done
+     ret ; return to main
+totalCount ENDP
+
+END main
+
+;---------------------------TEST RUN--------------------------------
+;The GCD of 24 and 4 is 4
+;
+;The GCD of 13 and 7 is 1
+;
+;The GCD of 432 and 226 is 2
+;
+;The GCD of 30 and 24 is 6
+;
+;The GCD of 56 and 7 is 7
+;
+;The GCD of 330 and 9 is 3
+;
+;The GCD of 63 and 9 is 9
+;
+;count: +3
+;-----------------------END OF RUN----------------------------------

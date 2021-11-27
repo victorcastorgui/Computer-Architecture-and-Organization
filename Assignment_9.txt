@@ -1,0 +1,78 @@
+
+//  In this assignment the program will find the longest increasing sequence from an array. The C++ program
+//  will create the array, offset of array and length of array by user input. Then inline assembly language
+//  program will find the longest increasing sequence by using the offset of an array and the array's size.
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int getLis(int* offsetArray, int sizeArray) {
+     int counter = 0;
+     int position;
+     _asm {
+          mov esi, offsetArray //move offset of array to esi
+          mov edi, offsetArray // move offser of edi to edi
+          add edi, 4 // add 4 to edi type dword
+          mov ecx, sizeArray // loop counter
+          mov edx, 0 // set counter 0
+
+          L1 : // loop
+          mov eax, [esi] // move address esi to eax
+               mov ebx, [edi] // move address edi to ebx
+               cmp ebx, eax //  compare eax and ebx
+               jle L2 // jump to L2 if less or equal
+               inc edx // add edx by 1
+               jmp L3 // jump to l3
+
+               L2 : // loop
+          mov eax, counter // move counter to eax
+               cmp edx, eax // compare eax with edx
+               jb L3 // jump to L3 if bigger
+               mov counter, edx // move edx to counter
+               mov position, esi // move esi to position
+               mov edx, 1 // mov 1 to edx
+
+               L3: // loop 3
+          add esi, 4 // add type DWORD
+               add edi, 4 // add type DWORD
+               loop L1 // loop
+     }
+     return counter; // return result
+} // asm
+
+//  The main will ask user to enter the array size and the values of the array. Then it will call the
+//  inline assembly language program to find the longest increasing sequence and print the result.
+int main() {
+     int theArray[1000]; // Array
+     cout << "Please input the size of array: "; 
+     int arraySize; // integer for size
+     cin >> arraySize; // read input
+     cout << "Enter the values as much as the size of the array: ";
+     for (int i = 0; i < arraySize; i++) {
+          cin >> theArray[i];
+     } // loop to insert values
+
+     cout << "The longest increasing sequence is : ";
+     cout << getLis(theArray, arraySize); // lis
+     return 0;
+}
+
+//---------------------------------TEST RUN 1------------------------------------
+//Please input the size of array: 10
+//Enter the values as much as the size of the array : -5 10 20 14 17 26 42 22 19 - 5
+//The longest increasing sequence is : 4
+//--------------------------------END OF RUN 1-----------------------------------
+
+//---------------------------------TEST RUN 2------------------------------------
+//Please input the size of array: 5
+//Enter the values as much as the size of the array: -1 2 1 4 5
+//The longest increasing sequence is : 3
+//--------------------------------END OF RUN 2-----------------------------------
+
+//---------------------------------TEST RUN 3------------------------------------
+//Please input the size of array: 10
+//Enter the values as much as the size of the array : 1 1 1 1 1 2 2 2 2 2
+//The longest increasing sequence is : 2
+//--------------------------------END OF RUN 2-----------------------------------

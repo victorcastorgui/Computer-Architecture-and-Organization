@@ -1,0 +1,91 @@
+
+; XOR, pushad, popad, dec, call, mov, inc, jg, loop
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess proto, dwExitCode:dword
+
+COMMENT !
+     This program will use format from the textbook however there are somethings that are changed.
+     Prompting user is removed and the message and key will be hard-coded. The program will use Key to
+     encrypt and decrypt the message by XOR(ing) one by one of the key against a corresponding byte in
+     the message. The key will repeat as many times as possible until all the message are translated. 
+     KEY = "AGZmy#4" and Message = "This is a Plaintext message (etc)".
+!
+
+INCLUDE Irvine32.inc
+.data
+     KEY BYTE "AGZmy#4",0  ; This is the KEY that will repeat in the same length with buffer/message.
+     sEncrypt BYTE "Cipher text: ",0    ; To indicate encrypted text.
+     sDecrypt BYTE "Decrypted: ",0      ; To indicate decrypted text.
+     buffer BYTE "This is a Plaintext message (etc)",0 ; The message to be encrypted and decrypted.
+
+.code
+main PROC
+    mov edx, OFFSET buffer    ; Move the message to edx
+    call WriteString     ; Print out the message
+    call Crlf  ; Enter to organize
+    call TranslateBuffer ; Encrypt the message
+    mov edx, OFFSET sEncrypt  ; move sEncrypt to edx
+    call WriteString     ; Print out sEncrypt
+    call Crlf      ; Print out enter
+    call DisplayMessage  ; Print out the sEncrypt with encrypted text
+    call TranslateBuffer ; Decrypt the message
+    mov edx,OFFSET sDecrypt ; Move sDecrypt to edx
+    call WriteString     ; Print out sDecrypt
+    call Crlf  ; print out enter
+    call DisplayMessage  ; Print out sDecrypt with decrypted text
+    exit
+main ENDP
+
+;----------------------------------------------------------------------------
+DisplayMessage PROC
+; Displays the encrypted or decrypted message.
+; Receives: EDX points to the message
+; Returns: nothing
+;-----------------------------------------------------
+   pushad ; Push all general-purpose registers
+   mov  edx,OFFSET buffer     ; Move the message encrypted/decrypted to edx
+   call WriteString ; print out the message encrypted/decrypted
+   call Crlf   ; print out enter
+   popad  ; Pop all general-purpose registers
+   ret    ; return to main
+DisplayMessage ENDP
+
+;---------------------------------------------------------------------------
+TranslateBuffer PROC
+; Translates the string by exclusive-ORing each
+; byte with the encryption key byte.
+; Receives: nothing
+; Returns: nothing
+;---------------------------------------------------------------------------
+     pushad    ; Push all general-purpose registers
+     mov ecx, SIZEOF buffer ; Move the size of the message to ecx as loop couunter
+     dec ecx   ; subtract 1 to ecx
+     mov esi,0 ; move 0 to register esi
+     mov ebx,0 ; move 0 to register edi
+L1:
+    mov al, KEY[ebx]     ; move one char from key to al
+    xor buffer[esi],al ; XORing with one char from the key and one from the message
+    inc esi    ; add 1 to esi
+    inc ebx    ; add 1 to ebx
+
+    mov edx,SIZEOF KEY-1   ; Move the number of bytes in key to edx
+    cmp edx,ebx     ; compare ebx to eds
+    jg noRepeat     ; if the size of key is bigger than edi, jump to noRepeat
+    mov ebx,0 ; reset ebx to 0
+noRepeat:
+     loop L1   ; loop L1
+     popad ;  pop all general-purpose registers
+     ret  ; return to main
+TranslateBuffer ENDP
+END main
+
+;-----------------------------TEST RUN---------------------------------
+; This is a Plaintext message (etc)
+; Cipher text:
+; ♥Y$4)♀▲F¶i".♫P/3?§
+; Decrypted:
+; This is a Plaintext message (etc)
+;-------------------------END OF TEST RUN------------------------------

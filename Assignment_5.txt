@@ -1,0 +1,162 @@
+
+; Generate Fibbonacci
+; ReadInt, PROC USES, call procedure, call WriteDec, WriteString
+
+COMMENT !
+	In this program, I will ask user to enter a 32-bit integer. The program will then calculate the number
+	of Fibonacci numbers. WriteString will be used to ask the question, ReadInt will be used to get the user input,
+	and WriteDec will be used to print out the values until the number of Fibbonaci. There will be more than one
+	procedure in this program. One called fib to generate the fibonacci, one to print out the values one by one, and 
+	finally the main procedure. One of the run where the user enter 47 as the 32-bit integer, the program will print out
+	all the fibonacci numbers until the final value 2,971,215,073.
+!
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess proto, dwExitCode:dword
+
+INCLUDE Irvine32.inc
+.data
+	array DWORD 100 DUP(0)	; Array to store the fibbonaci and the number generated
+	prompt BYTE "Enter a 32-bit signed integer: ",0	; String to be printed to ask user.
+.code
+main proc
+	mov edx, OFFSET prompt	; Move the string to edi
+	call WriteString		; print the prompt to ask user
+	call ReadInt			; read the integer entered by user
+	mov esi,OFFSET array	; move the first element of array to esi (this is a pointer to array)
+	mov ecx,eax			; move the number of values to be generated
+	call fib				; call the procedure fib that generates fibbonaci 
+	call printFib			; Print out all the values
+	INVOKE ExitProcess,0
+main endp
+
+printFib PROC USES ecx esi ; This procedure will print all the values until the integer input from the user.
+					  ; USES will push and pop the registers.
+L1:
+	mov eax,[esi]	; The value inside the array is stored into eax
+	call WriteDec; WriteDec can only print out eax value
+	call crlf ; this call creates new line everytime a fibonacci value is printed
+	add esi, 4 ; Add 4 to esi to go to the next location in the array.
+	Loop L1 ; Loop the loop
+	ret ; return to main
+	printFib ENDP ; end of display
+
+fib PROC USES esi ecx ; This procedure generates all the values of fibonacci. 
+				  ; USES will push and pop the registers.
+	mov eax,1		; move 1 to eax
+	mov [esi],eax	; 1 first number in array
+	add esi,4		; next location in array because 32-bits need to add by 4.
+	mov ebx,1		; move 1 to ebx
+	mov [esi],ebx	; 1 second number in array
+	add esi,4		; next location in array because 32-bits need to add by 4.
+	sub ecx,2		; There are already 2 numbers in the array therefore ecx erase by 2
+
+L1:
+	mov edx,ebx	; second number in array is moved to edx
+	add ebx,eax	; second = first + second
+	mov [esi],ebx	; the new fib number is stored into the array
+	
+	; The following code is to save the previous number as the new first number
+	mov eax,edx	; new first number is the previous second number
+	add esi,4		; moving to the next location because 32-bit is added by 4
+	Loop L1		; This process is repeated until the given integer reaches 0
+
+	ret			; return to main
+fib ENDP			; end the fib procedure
+end main
+
+
+COMMENT !
+	----------------------------TEST RUN 1 WITH VALUE 47----------------------------
+	Enter a 32-bit signed integer: 47
+	1
+	1
+	2
+	3
+	5
+	8
+	13
+	21
+	34
+	55
+	89
+	144
+	233
+	377
+	610
+	987
+	1597
+	2584
+	4181
+	6765
+	10946
+	17711
+	28657
+	46368
+	75025
+	121393
+	196418
+	317811
+	514229
+	832040
+	1346269
+	2178309
+	3524578
+	5702887
+	9227465
+	14930352
+	24157817
+	39088169
+	63245986
+	102334155
+	165580141
+	267914296
+	433494437
+	701408733
+	1134903170
+	1836311903
+	2971215073
+
+	----------------------------TEST RUN 2 WITH VALUE 20----------------------------
+	Enter a 32-bit signed integer: 20
+	1
+	1
+	2
+	3
+	5
+	8
+	13
+	21
+	34
+	55
+	89
+	144
+	233
+	377
+	610
+	987
+	1597
+	2584
+	4181
+	6765
+
+	----------------------------TEST RUN 3 WITH VALUE 15----------------------------
+	Enter a 32-bit signed integer: 15
+	1
+	1
+	2
+	3
+	5
+	8
+	13
+	21
+	34
+	55
+	89
+	144
+	233
+	377
+	610
+!
